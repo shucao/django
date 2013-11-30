@@ -209,6 +209,10 @@ def password_reset_confirm(request, uidb64=None, token=None,
             form = set_password_form(user, request.POST)
             if form.is_valid():
                 form.save()
+                # auto-login
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                auth_login(request, user)
+                #~auto-login
                 return HttpResponseRedirect(post_reset_redirect)
         else:
             form = set_password_form(None)
