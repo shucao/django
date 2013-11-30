@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from django.conf import settings
 from django.utils.http import int_to_base36, base36_to_int
 from django.utils.crypto import constant_time_compare, salted_hmac
@@ -15,7 +15,7 @@ class PasswordResetTokenGenerator(object):
         Returns a token that can be used once to do a password reset
         for the given user.
         """
-        return self._make_token_with_timestamp(user, self._num_days(self._today()))
+        return self._make_token_with_timestamp(user, self._num_secondss(self._now()))
 
     def check_token(self, user, token):
         """
@@ -37,7 +37,7 @@ class PasswordResetTokenGenerator(object):
             return False
 
         # Check the timestamp is within limit
-        if (self._num_days(self._today()) - ts) > settings.PASSWORD_RESET_TIMEOUT_DAYS:
+        if (self._num_seconds(self._now()) - ts) > settings.PASSWORD_RESET_TIMEOUT_SECONDS:
             return False
 
         return True
@@ -63,11 +63,12 @@ class PasswordResetTokenGenerator(object):
         hash = salted_hmac(key_salt, value).hexdigest()[::2]
         return "%s-%s" % (ts_b36, hash)
 
-    def _num_days(self, dt):
-        return (dt - date(2001, 1, 1)).days
+    def _num_seconds(self, dt):
+        diff = dt - datetime(2013, 11, 1)
+        return diff.days * 86400 + diff.seconds
 
-    def _today(self):
+    def _now(self):
         # Used for mocking in tests
-        return date.today()
+        return datetime.now()
 
 default_token_generator = PasswordResetTokenGenerator()
