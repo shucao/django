@@ -223,6 +223,8 @@ def password_reset_confirm(request, uidb64=None, token=None,
         'form': form,
         'validlink': validlink,
     }
+    if validlink:
+        context.update({'u': user})
     if extra_context is not None:
         context.update(extra_context)
     return TemplateResponse(request, template_name, context,
